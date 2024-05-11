@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-	"v1/domain"
+	"v1/controller"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,19 +10,25 @@ import (
 func main() {
 	r := gin.Default()
 
+	controllers := runtime()
+
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, "pong")
 	})
 
-	r.POST("/login", func(c *gin.Context) {
-		var credentials domain.Credentials
-		if err := c.ShouldBindJSON(&credentials); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, credentials)
-	})
+	r.POST("/login", controllers.loginController.Handle)
 
 	r.Run()
+}
+
+type controllers struct {
+	loginController *controller.LoginController
+}
+
+func runtime() controllers {
+	loginController := controller.NewLoginController()
+
+	return controllers{
+		loginController: loginController,
+	}
 }
