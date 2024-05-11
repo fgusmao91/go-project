@@ -25,11 +25,14 @@ func (lc *LoginController) Handle(c *gin.Context) {
 		return
 	}
 
-	err := lc.loginService.AuthenticateUser(credentials)
+	tokenString, err := lc.loginService.AuthenticateUser(credentials)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, "authenticated")
+	c.JSON(http.StatusOK, domain.LoginResponse{
+		Username: credentials.Username,
+		Token:    tokenString,
+	})
 }
