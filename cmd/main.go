@@ -2,9 +2,9 @@ package main
 
 import (
 	"net/http"
+	"v1/domain"
 
 	"github.com/gin-gonic/gin"
-	"github.com/yourusername/yourproject/domain"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 			return
 		}
 
-		c.JSON(http.StatusOK, "login")
+		c.JSON(http.StatusOK, credentials)
 	})
 
 	r.Run()

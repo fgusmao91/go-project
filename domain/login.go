@@ -1,6 +1,6 @@
 package domain
 
-type credentials struct {
-	username string
-	password string
+type Credentials struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
