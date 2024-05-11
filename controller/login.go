@@ -3,14 +3,19 @@ package controller
 import (
 	"net/http"
 	"v1/domain"
+	"v1/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-type LoginController struct{}
+type LoginController struct {
+	loginService service.LoginService
+}
 
-func NewLoginController() *LoginController {
-	return &LoginController{}
+func NewLoginController(loginService service.LoginService) *LoginController {
+	return &LoginController{
+		loginService: loginService,
+	}
 }
 
 func (lc *LoginController) Handle(c *gin.Context) {
@@ -20,5 +25,11 @@ func (lc *LoginController) Handle(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, credentials)
+	err := lc.loginService.AuthenticateUser(credentials)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, "authenticated")
 }
