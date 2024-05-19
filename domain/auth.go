@@ -6,7 +6,7 @@ type Credentials struct {
 }
 
 type Authorizations struct {
-	CredentialID int `json:"credential_id"`
+	CredentialID int64 `json:"credential_id"`
 	AppName string `json:"app_name"`
 	AuthType string `json:"auth_type"`
 }

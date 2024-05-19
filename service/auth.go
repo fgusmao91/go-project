@@ -23,7 +23,7 @@ func NewAuthService(authRepository repository.AuthRepository) *AuthService {
 	}
 }
 
-func (ls *AuthService) AuthenticateUser(credentials dto.Credentials) (string, error) {
+func (ls *AuthService) AuthenticateUser(credentials dto.LoginRequest) (string, error) {
 	hashPassword := hashPassword(credentials.Password)
 	_, err := ls.authRepository.GetCredentials(credentials.Username, hashPassword)
 	if err != nil {
@@ -43,12 +43,31 @@ func (ls *AuthService) AuthenticateUser(credentials dto.Credentials) (string, er
 	return tokenString, nil
 }
 
-func (ls *AuthService) RegisterUser(credentials dto.Credentials) error {
+func (ls *AuthService) RegisterUser(credentials dto.LoginRegister) error {
 	domainCredentials := domain.Credentials{
 		Username: credentials.Username,
 		Password: hashPassword(credentials.Password),
 	}
-	err := ls.authRepository.InsertCredentials(domainCredentials)
+	_, err := ls.authRepository.InsertCredentials(domainCredentials)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ls *AuthService) AddAuthorization(userName string, authorizations dto.AuthorizationRegister) error {
+	credentialID, err := ls.authRepository.GetCredentialIDByUsername(userName)
+	if err != nil {
+		return err
+	}
+	
+	domainAuthorizations := domain.Authorizations{
+		CredentialID: credentialID,
+		AppName: authorizations.AppName,
+		AuthType: authorizations.AuthType,
+	}
+	_, err = ls.authRepository.InsertAuthorizations(domainAuthorizations)
 	if err != nil {
 		return err
 	}

@@ -12,7 +12,8 @@ func main() {
 	r := gin.Default()
 
 	r.POST("/login", controllers.LoginController.Login)
-	r.POST("/register", controllers.LoginController.Register)
+	r.POST("/register", controllers.LoginController.RegisterUser)
+	r.POST("user/:user/add_authorization", controllers.LoginController.AddAuthorization)
 
 	r.Run()
 }

@@ -8,7 +8,9 @@ import (
 
 const (
 	insertCredentials = "INSERT INTO credentials (username, password) VALUES (?, ?)"
+	InsertAuthorizations = "INSERT INTO authorizations (credential_id, app_name, auth_type) VALUES (?, ?, ?)"
 	getCredentials    = "SELECT username, password FROM credentials WHERE username = ? and password = ?"
+	getCredentialIDByUserName = "SELECT id FROM credentials WHERE username = ?"
 )
 
 type AuthRepository struct {
@@ -21,13 +23,26 @@ func NewAuthRepository(db *sql.DB) *AuthRepository {
 	}
 }
 
-func (lr *AuthRepository) InsertCredentials(credentials domain.Credentials) error {
-	_, err := lr.db.Exec(insertCredentials, credentials.Username, credentials.Password)
+func (lr *AuthRepository) InsertCredentials(credentials domain.Credentials) (*int64,error) {
+	result, err := lr.db.Exec(insertCredentials, credentials.Username, credentials.Password)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	lasteInsertedID, _ := result.LastInsertId()
+
+	return &lasteInsertedID, nil
+}
+
+func (lr *AuthRepository) InsertAuthorizations(authorizations domain.Authorizations) (*int64,error) {
+	result, err := lr.db.Exec(InsertAuthorizations, authorizations.CredentialID, authorizations.AppName, authorizations.AuthType)
+	if err != nil {
+		return nil, err
+	}
+
+	lasteInsertedID, _ := result.LastInsertId()
+
+	return &lasteInsertedID, nil
 }
 
 func (lr *AuthRepository) GetCredentials(username string, password string) (domain.Credentials, error) {
@@ -41,4 +56,17 @@ func (lr *AuthRepository) GetCredentials(username string, password string) (doma
 	}
 	
 	return credentials, nil
+}
+
+func (lr *AuthRepository) GetCredentialIDByUsername(username string) (int64, error) {
+	var credentialID int64
+	err := lr.db.QueryRow(getCredentialIDByUserName, username).Scan(&credentialID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, errors.New("user not found")
+		}
+		return 0, err
+	}
+	
+	return credentialID, nil
 }

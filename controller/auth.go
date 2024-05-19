@@ -19,7 +19,7 @@ func NewAuthController(authService service.AuthService) *AuthController {
 }
 
 func (lc *AuthController) Login(c *gin.Context) {
-	var credentials dto.Credentials
+	var credentials dto.LoginRequest
 	if err := c.ShouldBindJSON(&credentials); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -37,8 +37,8 @@ func (lc *AuthController) Login(c *gin.Context) {
 	})
 }
 
-func (lc *AuthController) Register(c *gin.Context) {
-	var credentials dto.Credentials
+func (lc *AuthController) RegisterUser(c *gin.Context) {
+	var credentials dto.LoginRegister
 	if err := c.ShouldBindJSON(&credentials); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -51,4 +51,22 @@ func (lc *AuthController) Register(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, "user registered successfully")
+}
+
+func (lc *AuthController) AddAuthorization(c *gin.Context) {
+	var credentials dto.AuthorizationRegister
+	if err := c.ShouldBindJSON(&credentials); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userName := c.Param("user")
+
+	err := lc.authService.AddAuthorization(userName, credentials)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	
+	c.JSON(http.StatusOK, "authorization added successfully")
 }
