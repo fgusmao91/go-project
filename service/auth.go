@@ -14,18 +14,20 @@ import (
 const ErrInvalidCredentials = "invalid credentials"
 
 type AuthService struct {
-	authRepository repository.AuthRepository
+	credentialRepository repository.CredentialRepository
+	authRepository       repository.AuthorizationRepository
 }
 
-func NewAuthService(authRepository repository.AuthRepository) *AuthService {
+func NewAuthService(credentialRepository repository.CredentialRepository, authRepository repository.AuthorizationRepository) *AuthService {
 	return &AuthService{
+		credentialRepository: credentialRepository,
 		authRepository: authRepository,
 	}
 }
 
 func (ls *AuthService) AuthenticateUser(credentials dto.Login) (string, error) {
 	hashPassword := hashPassword(credentials.Password)
-	domainCredential, err := ls.authRepository.GetCredentials(credentials.Username, hashPassword)
+	domainCredential, err := ls.credentialRepository.GetCredentials(credentials.Username, hashPassword)
 	if err != nil {
 		return "", err
 	}
@@ -64,7 +66,7 @@ func (ls *AuthService) RegisterUser(credentials dto.Login) error {
 		Username: credentials.Username,
 		Password: hashPassword(credentials.Password),
 	}
-	_, err := ls.authRepository.InsertCredentials(domainCredentials)
+	_, err := ls.credentialRepository.InsertCredentials(domainCredentials)
 	if err != nil {
 		return err
 	}
@@ -73,7 +75,7 @@ func (ls *AuthService) RegisterUser(credentials dto.Login) error {
 }
 
 func (ls *AuthService) AddAuthorization(userName string, authorizations dto.Authorization) error {
-	credentialID, err := ls.authRepository.GetCredentialIDByUsername(userName)
+	credentialID, err := ls.credentialRepository.GetCredentialIDByUsername(userName)
 	if err != nil {
 		return err
 	}

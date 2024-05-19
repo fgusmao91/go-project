@@ -20,10 +20,11 @@ func InjectDependencies() Controllers {
 	}
 
 	//repositories
-	loginRepository := repository.NewAuthRepository(db)
+	credentialRepository := repository.NewCredentialRepository(db)
+	authorizationRepository := repository.NewAuthorizationRepository(db)
 
 	//services
-	loginService := service.NewAuthService(*loginRepository)
+	loginService := service.NewAuthService(*credentialRepository, *authorizationRepository)
 
 	//controllers
 	loginController := controller.NewAuthController(*loginService)
