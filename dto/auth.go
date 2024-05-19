@@ -1,6 +1,13 @@
 package dto
 
-type Credentials struct {
+type LoginRegister struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	AppName string `json:"app_name"`
+	AuthType string `json:"auth_type"`
+}
+
+type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
