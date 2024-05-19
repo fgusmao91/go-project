@@ -23,9 +23,9 @@ func NewAuthService(authRepository repository.AuthRepository) *AuthService {
 	}
 }
 
-func (ls *AuthService) AuthenticateUser(credentials dto.LoginRequest) (string, error) {
+func (ls *AuthService) AuthenticateUser(credentials dto.Login) (string, error) {
 	hashPassword := hashPassword(credentials.Password)
-	_, err := ls.authRepository.GetCredentials(credentials.Username, hashPassword)
+	domainCredential, err := ls.authRepository.GetCredentials(credentials.Username, hashPassword)
 	if err != nil {
 		return "", err
 	}
@@ -33,7 +33,23 @@ func (ls *AuthService) AuthenticateUser(credentials dto.LoginRequest) (string, e
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["username"] = credentials.Username
-	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
+	claims["exp"] = time.Now().Add(time.Minute * 3).Unix()
+
+	domainAuthorizations, err := ls.authRepository.GetAuthorizations(domainCredential.ID)
+	if err != nil {
+		return "", err
+	}
+	
+	var authorizations []dto.Authorization
+	for _, authorization := range domainAuthorizations {
+		auth := dto.Authorization{
+			AppName: authorization.AppName,
+			AuthType: authorization.AuthType,
+		}
+		authorizations = append(authorizations, auth)
+	}
+
+	claims["authorizations"] = authorizations
 
 	tokenString, err := token.SignedString([]byte("secret"))
 	if err != nil {
@@ -43,7 +59,7 @@ func (ls *AuthService) AuthenticateUser(credentials dto.LoginRequest) (string, e
 	return tokenString, nil
 }
 
-func (ls *AuthService) RegisterUser(credentials dto.LoginRegister) error {
+func (ls *AuthService) RegisterUser(credentials dto.Login) error {
 	domainCredentials := domain.Credentials{
 		Username: credentials.Username,
 		Password: hashPassword(credentials.Password),
@@ -56,7 +72,7 @@ func (ls *AuthService) RegisterUser(credentials dto.LoginRegister) error {
 	return nil
 }
 
-func (ls *AuthService) AddAuthorization(userName string, authorizations dto.AuthorizationRegister) error {
+func (ls *AuthService) AddAuthorization(userName string, authorizations dto.Authorization) error {
 	credentialID, err := ls.authRepository.GetCredentialIDByUsername(userName)
 	if err != nil {
 		return err

@@ -19,7 +19,7 @@ func NewAuthController(authService service.AuthService) *AuthController {
 }
 
 func (lc *AuthController) Login(c *gin.Context) {
-	var credentials dto.LoginRequest
+	var credentials dto.Login
 	if err := c.ShouldBindJSON(&credentials); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -38,7 +38,7 @@ func (lc *AuthController) Login(c *gin.Context) {
 }
 
 func (lc *AuthController) RegisterUser(c *gin.Context) {
-	var credentials dto.LoginRegister
+	var credentials dto.Login
 	if err := c.ShouldBindJSON(&credentials); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -54,7 +54,7 @@ func (lc *AuthController) RegisterUser(c *gin.Context) {
 }
 
 func (lc *AuthController) AddAuthorization(c *gin.Context) {
-	var credentials dto.AuthorizationRegister
+	var credentials dto.Authorization
 	if err := c.ShouldBindJSON(&credentials); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
